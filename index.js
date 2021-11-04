@@ -27,6 +27,7 @@ async function run() {
         await client.connect();
         const database = client.db("shebaServices");
         const servicesCollection = database.collection("services");
+        const orderCollection = database.collection('orders');
 
 //         // GET API
         app.get('/services', async (req, res) => {
@@ -53,6 +54,24 @@ async function run() {
             console.log(result);
             res.json(result)
 
+        });
+        // Add Orders API
+        app.get('/orders', async(req, res) => {
+            let query = {};
+            const email = req.query.email;
+            if(email) {
+                query = {email: email};
+            }
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.json(orders);
+        });
+
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            order.createdAt = new Date();
+            const result = await orderCollection.insertOne(order);
+            res.json(result);
         });
 
         // DELETE API
